@@ -1,0 +1,112 @@
+{% extends 'nut_shop/base.html' %}
+{% load static %}
+
+{% block title %}Главная - Орех Маркет{% endblock %}
+
+{% block extra_css %}
+<style>
+    .product-card {
+        transition: transform 0.3s ease-in-out;
+    }
+    .product-card:hover {
+        transform: scale(1.05);
+    }
+    .product-rating {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .stars {
+        font-size: 1.2em;
+        margin-right: 5px;
+    }
+    .star {
+        display: inline-block;
+        color: #d3d3d3;
+    }
+    .star.filled {
+        color: #ffd700;
+    }
+    .rating-value {
+        font-weight: bold;
+        color: #000;
+    }
+    .card-img-top {
+        height: 150px;
+        object-fit: cover;
+        object-position: center;
+    }
+    .card-title, .card-text {
+        color: #000;
+    }
+    @media (max-width: 767px) {
+        .card-title {
+            font-size: 0.9rem;
+        }
+        .card-text {
+            font-size: 0.8rem;
+        }
+        .stars {
+            font-size: 1em;
+        }
+    }
+    .logo-container {
+        text-align: left;
+        margin-bottom: 20px;
+    }
+    .logo-container img {
+        max-width: 200px;
+        height: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="logo-container">
+        {% if logo_url %}
+            <img src="{{ logo_url }}" alt="Орех Маркет">
+        {% else %}
+            <h1>Орех Маркет</h1>
+        {% endif %}
+    </div>
+    
+    <h2 class="mb-3">Популярные товары</h2>
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 g-md-3">
+        {% for product in products %}
+        <div class="col">
+            <div class="card h-100 product-card">
+                <a href="{% url 'product_detail' product.id %}" class="text-decoration-none text-dark">
+                    {% if product.main_image %}
+                        <img src="{{ product.main_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                    {% else %}
+                        <div class="card-img-top bg-light text-center py-5">Нет изображения</div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <div class="product-rating">
+                            <span class="stars">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= product.avg_rating %}
+                                        <span class="star filled">★</span>
+                                    {% else %}
+                                        <span class="star">☆</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                            <span class="rating-value">{{ product.avg_rating|floatformat:1 }}/5</span>
+                        </div>
+                        <p class="card-text">
+                            <small class="text-muted">От {{ product.get_cheapest_variant.price|floatformat:2 }} ₽</small>
+                        </p>
+                        <p class="card-text">
+                            Заказов: {{ product.order_count }}
+                        </p>
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

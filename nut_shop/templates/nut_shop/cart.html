@@ -1,0 +1,83 @@
+{% extends 'nut_shop/base.html' %}
+{% load static %}
+
+{% block title %}Корзина - Орех Маркет{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cart.css' %}">
+<style>
+    .cart-summary {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .cart-total {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+    .btn-continue-shopping,
+    .btn-checkout {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    .btn-continue-shopping {
+        background-color: #6c757d;
+        color: white;
+    }
+    .btn-continue-shopping:hover {
+        background-color: #5a6268;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Корзина</h1>
+    {% if items %}
+        <div class="row">
+            <div class="col-md-8">
+                <div class="cart-items">
+                    {% for item in items %}
+                        <div class="cart-item">
+                            <div class="item-image">
+                                {% if item.variant.product.main_image %}
+                                    <img src="{{ item.variant.product.main_image.image.url }}" alt="{{ item.variant.product.name }}">
+                                {% else %}
+                                    <div class="no-image">Нет фото</div>
+                                {% endif %}
+                            </div>
+                            <div class="item-details">
+                                <h5>{{ item.variant.product.name }}</h5>
+                                <p>{{ item.variant.weight }}г</p>
+                                <p>Цена: {{ item.variant.price }} ₽</p>
+                                <p>Количество: {{ item.quantity }}</p>
+                                <p>Итого: {{ item.item_total }} ₽</p>
+                            </div>
+                            <div class="item-actions">
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="remove_variant" value="{{ item.variant.id }}">
+                                    <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="cart-summary">
+                    <div class="cart-total">Итого: {{ total }} ₽</div>
+                    <a href="{% url 'checkout' %}" class="btn btn-primary btn-checkout">Оформить заказ</a>
+                    <a href="{% url 'product_list' %}" class="btn btn-continue-shopping">Продолжить покупки</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p>Ваша корзина пуста.</p>
+        <a href="{% url 'product_list' %}" class="btn btn-primary">Перейти к покупкам</a>
+    {% endif %}
+</div>
+{% endblock %}

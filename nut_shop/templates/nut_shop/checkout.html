@@ -1,0 +1,67 @@
+{% extends 'nut_shop/base.html' %}
+{% load custom_filters %}
+
+{% block title %}Оформление заказа - Орех Маркет{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control:focus {
+        border-color: #5a4a2f;
+        box-shadow: 0 0 0 0.2rem rgba(90, 74, 47, 0.25);
+    }
+    .btn-primary {
+        background-color: #5a4a2f;
+        border-color: #5a4a2f;
+    }
+    .btn-primary:hover, .btn-primary:focus {
+        background-color: #463a25;
+        border-color: #463a25;
+    }
+    .form-label {
+        color: #5a4a2f;
+        font-weight: bold;
+    }
+    .order-summary {
+        background-color: #f8f4e3;
+        border: 1px solid #e0d8b8;
+        border-radius: 5px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .order-summary h3 {
+        color: #5a4a2f;
+        border-bottom: 2px solid #e0d8b8;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .order-item {
+        border-bottom: 1px solid #e0d8b8;
+        padding: 10px 0;
+    }
+    .order-total {
+        font-weight: bold;
+        margin-top: 20px;
+        font-size: 1.2em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Оформление заказа</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <h3>Ваш заказ:</h3>
+        <ul>
+            {% for variant_id, quantity in request.session.cart.items %}
+                {% with variant=variant_id|get_variant %}
+                    <li>{{ variant.product.name }} ({{ variant.weight }}г) - {{ quantity }} шт.</li>
+                {% endwith %}
+            {% endfor %}
+        </ul>
+        <p>Итого: {{ total_price }} ₽</p>
+        <button type="submit" class="btn btn-primary">Оформить заказ</button>
+    </form>
+</div>
+{% endblock %}

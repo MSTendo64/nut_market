@@ -1,0 +1,21 @@
+{% extends 'nut_shop/base.html' %}
+
+{% block title %}Подтверждение заказа - Орех Маркет{% endblock %}
+
+{% block content %}
+<h1>Подтверждение заказа</h1>
+
+<p>Спасибо за ваш заказ! Номер вашего заказа: {{ order.id }}</p>
+
+<h2>Детали заказа:</h2>
+<ul>
+{% for item in order.items.all %}
+    <li>{{ item.product.name }} - {{ item.quantity }} шт. - {{ item.price }} ₽</li>
+{% endfor %}
+</ul>
+
+<p>Общая сумма: {{ order.total_price }} ₽</p>
+
+<p>Мы свяжемся с вами для подтверждения деталей доставки.</p>
+
+{% endblock %}

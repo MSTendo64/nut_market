@@ -1,0 +1,432 @@
+{% extends 'nut_shop/base.html' %}
+{% load static custom_filters %}
+
+{% block title %}{{ product.name }} - Орех Маркет{% endblock %}
+
+{% block extra_css %}
+<style>
+    .review-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .product-rating {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .stars {
+        font-size: 1.2em;
+        margin-right: 5px;
+    }
+    .star {
+        display: inline-block;
+        color: #d3d3d3;
+    }
+    .star.filled {
+        color: #ffd700;
+    }
+    .rating-value {
+        font-weight: bold;
+        color: #000;
+    }
+    .product-description {
+        font-size: 1.1em;
+        line-height: 1.6;
+        margin-top: 20px;
+    }
+    .video-container {
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 */
+        height: 0;
+        overflow: hidden;
+        max-width: 100%;
+    }
+    .video-container iframe,
+    .video-container video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .video-preview {
+        position: relative;
+        cursor: pointer;
+    }
+    .video-preview img {
+        width: 100%;
+        height: auto;
+    }
+    .play-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 0;
+        height: 0;
+        border-top: 20px solid transparent;
+        border-left: 40px solid #fff;
+        border-bottom: 20px solid transparent;
+    }
+    .product-images {
+        display: flex;
+        flex-direction: column;
+    }
+    .main-image {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        margin-bottom: 10px;
+    }
+    .thumbnail-container {
+        display: flex;
+        overflow-x: auto;
+        gap: 10px;
+    }
+    .thumbnail {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+    .thumbnail.active {
+        border-color: #007bff;
+    }
+    .fullscreen-image {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .fullscreen-image img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+    }
+    .recommended-products {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 20px 0;
+        margin: 20px 0;
+        border-top: 1px solid #e0e0e0;
+        border-bottom: 1px solid #e0e0e0;
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+    .recommended-products::-webkit-scrollbar {
+        height: 8px;
+    }
+    .recommended-products::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    .recommended-products::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+    .recommended-products::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    .recommended-product {
+        flex: 0 0 auto;
+        width: 150px;
+        margin-right: 15px;
+        text-align: center;
+    }
+    .recommended-product img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+    .recommended-product-name {
+        font-size: 0.9em;
+        margin-top: 5px;
+        white-space: normal;
+    }
+    .recommended-product-price {
+        font-size: 0.8em;
+        font-weight: bold;
+    }
+    .variant-selector {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .variant-button {
+        padding: 10px 15px;
+        border: 2px solid #007bff;
+        border-radius: 5px;
+        background-color: white;
+        color: #007bff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .variant-button.selected {
+        background-color: #007bff;
+        color: white;
+    }
+    #add-to-cart-btn {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    #add-to-cart-btn:hover {
+        background-color: #218838;
+    }
+    #add-to-cart-btn:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+    }
+    .quantity-selector {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    .quantity-selector label {
+        margin-right: 10px;
+    }
+    .quantity-input-group {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .quantity-input-group input[type="number"] {
+        border: none;
+        width: 50px;
+        text-align: center;
+        -moz-appearance: textfield;
+    }
+    .quantity-input-group input[type="number"]::-webkit-outer-spin-button,
+    .quantity-input-group input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    .quantity-btn {
+        background-color: #f8f9fa;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .quantity-btn:hover {
+        background-color: #e9ecef;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const videoPreviews = document.querySelectorAll('.video-preview');
+    videoPreviews.forEach(preview => {
+        preview.addEventListener('click', function() {
+            const videoId = this.dataset.videoId;
+            window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+        });
+    });
+});
+
+function changeMainImage(thumbnail) {
+    const mainImage = document.getElementById('mainImage');
+    mainImage.src = thumbnail.src;
+    
+    // Remove active class from all thumbnails
+    document.querySelectorAll('.thumbnail').forEach(thumb => {
+        thumb.classList.remove('active');
+    });
+    
+    // Add active class to clicked thumbnail
+    thumbnail.classList.add('active');
+}
+
+function toggleFullscreen() {
+    const fullscreenDiv = document.getElementById('fullscreenImage');
+    const fullscreenImg = document.getElementById('fullscreenImg');
+    const mainImage = document.getElementById('mainImage');
+
+    if (fullscreenDiv.style.display === 'flex') {
+        fullscreenDiv.style.display = 'none';
+    } else {
+        fullscreenImg.src = mainImage.src;
+        fullscreenDiv.style.display = 'flex';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const variantButtons = document.querySelectorAll('.variant-button');
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+
+    variantButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            variantButtons.forEach(btn => btn.classList.remove('selected'));
+            this.classList.add('selected');
+            this.querySelector('input[type="radio"]').checked = true;
+            addToCartBtn.disabled = false;
+        });
+    });
+});
+
+function incrementQuantity() {
+    var quantityInput = document.getElementById('quantity');
+    quantityInput.value = parseInt(quantityInput.value) + 1;
+}
+
+function decrementQuantity() {
+    var quantityInput = document.getElementById('quantity');
+    if (parseInt(quantityInput.value) > 1) {
+        quantityInput.value = parseInt(quantityInput.value) - 1;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const variantButtons = document.querySelectorAll('.variant-button');
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+    const quantityInput = document.getElementById('quantity');
+
+    variantButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            variantButtons.forEach(btn => btn.classList.remove('selected'));
+            this.classList.add('selected');
+            this.querySelector('input[type="radio"]').checked = true;
+            addToCartBtn.disabled = false;
+        });
+    });
+
+    quantityInput.addEventListener('input', function() {
+        if (this.value < 1) {
+            this.value = 1;
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="product-images">
+                {% if product.images.all %}
+                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="main-image" id="mainImage" onclick="toggleFullscreen()">
+                    <div class="thumbnail-container">
+                        {% for image in product.images.all %}
+                            <img src="{{ image.image.url }}" alt="{{ product.name }}" class="thumbnail {% if forloop.first %}active{% endif %}" onclick="changeMainImage(this)">
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center p-5 bg-light">Изображение отсутствует</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h1>{{ product.name }}</h1>
+            <div class="product-rating">
+                <span class="stars">
+                    {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= product.average_rating %}
+                            <span class="star filled">★</span>
+                        {% else %}
+                            <span class="star">☆</span>
+                        {% endif %}
+                    {% endfor %}
+                </span>
+                <span class="rating-value">{{ product.average_rating }}/5</span>
+            </div>
+            <form method="post" action="{% url 'add_to_cart' %}" id="add-to-cart-form">
+                {% csrf_token %}
+                <div class="variant-selector">
+                    {% for variant in product.variants.all %}
+                    <label class="variant-button">
+                        <input type="radio" name="variant_id" value="{{ variant.id }}" style="display: none;">
+                        {{ variant.weight }}г за {{ variant.price }} ₽
+                    </label>
+                    {% endfor %}
+                </div>
+                <div class="quantity-selector">
+                    <label for="quantity">Количество:</label>
+                    <div class="quantity-input-group">
+                        <button type="button" class="quantity-btn" onclick="decrementQuantity()">-</button>
+                        <input type="number" id="quantity" name="quantity" value="1" min="1" class="form-control">
+                        <button type="button" class="quantity-btn" onclick="incrementQuantity()">+</button>
+                    </div>
+                </div>
+                <button type="submit" id="add-to-cart-btn" disabled>Добавить в корзину</button>
+            </form>
+            <div class="product-description mt-4">
+                {{ product.formatted_description|custom_format }}
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mt-4">Рекомендуемые товары</h3>
+    <div class="recommended-products">
+        {% for recommended in recommended_products %}
+        <div class="recommended-product">
+            <a href="{% url 'product_detail' recommended.id %}" class="text-decoration-none text-dark">
+                {% if recommended.main_image %}
+                    <img src="{{ recommended.main_image.image.url }}" alt="{{ recommended.name }}">
+                {% else %}
+                    <div class="text-center p-3 bg-light">Нет фото</div>
+                {% endif %}
+                <div class="recommended-product-name">{{ recommended.name }}</div>
+                <div class="recommended-product-price">от {{ recommended.get_cheapest_variant.price|floatformat:2 }} ₽</div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <h2 class="mt-4">Отзывы</h2>
+    {% for review in reviews %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-2">
+                {% if review.user.userprofile.avatar %}
+                    <img src="{{ review.user.userprofile.avatar.url }}" alt="{{ review.user.username }}" class="review-avatar mr-3">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.png' %}" alt="{{ review.user.username }}" class="review-avatar mr-3">
+                {% endif %}
+                <h5 class="card-title mb-0">{{ review.user.username }}</h5>
+            </div>
+            <p class="card-text">{{ review.text }}</p>
+            <p class="card-text"><small class="text-muted">Оценка: {{ review.rating }}/5</small></p>
+        </div>
+    </div>
+    {% empty %}
+    <p>Пока нет отзывов. Будьте первым!</p>
+    {% endfor %}
+
+    {% if user.is_authenticated and user_can_review %}
+    <h3>Оставить отзыв</h3>
+    <form method="post" action="{% url 'add_review' product.id %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+    </form>
+    {% endif %}
+</div>
+
+<!-- Fullscreen image container -->
+<div id="fullscreenImage" class="fullscreen-image" onclick="toggleFullscreen()">
+    <img id="fullscreenImg" src="" alt="Fullscreen image">
+</div>
+{% endblock %}

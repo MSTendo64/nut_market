@@ -1,0 +1,274 @@
+{% extends 'nut_shop/base.html' %}
+{% load static %}
+
+{% block title %}Каталог - Орех Маркет{% endblock %}
+{% block extra_css %}
+<style>
+    .product-card {
+        transition: transform 0.3s ease-in-out;
+    }
+    .product-card:hover {
+        transform: scale(1.05);
+    }
+    .product-rating {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+    }
+    .stars {
+        font-size: 1.2em;
+        margin-right: 5px;
+        display: inline-block;
+    }
+    .star {
+        display: inline-block;
+        color: #d3d3d3; /* Светло-серый цвет для незаполненных звезд */
+    }
+    .star.filled {
+        color: #ffd700; /* Желтый цвет для заполненных звезд */
+    }
+    .rating-value {
+        font-weight: bold;
+        color: #000;
+        font-size: 0.9em;
+    }
+    .card-img-top {
+        height: 150px; /* Уменьшаем высоту изображения */
+        object-fit: cover;
+        object-position: center; /* Центрируем изображение */
+    }
+    .card-title, .card-text {
+        color: #000;
+    }
+    .pagination {
+        justify-content: center;
+        margin-top: 20px;
+    }
+    @media (max-width: 767px) {
+        .card-title {
+            font-size: 0.9rem;
+        }
+        .card-text {
+            font-size: 0.8rem;
+        }
+        .stars {
+            font-size: 0.9em;
+        }
+        .rating-value {
+            font-size: 0.8em;
+        }
+    }
+    .sort-options {
+        margin-bottom: 20px;
+    }
+    .sort-options select {
+        padding: 5px;
+        border-radius: 5px;
+        width: 100%;
+    }
+    .catalog-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    .catalog-title {
+        margin: 0;
+        flex: 1;
+    }
+    .sort-container {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+    }
+    .sort-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+        vertical-align: middle;
+        flex-shrink: 0;
+    }
+    .sort-select {
+        width: auto;
+        padding: 8px 28px 8px 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        background-color: white;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 1em;
+    }
+    @media (max-width: 767px) {
+        .catalog-header {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between; /* Добавлено для распределения пространства */
+        }
+        .catalog-title {
+            flex: 0 0 auto;
+            margin-right: 10px;
+            font-size: 1.5rem; /* Уменьшаем размер шрифта для мобильных устройств */
+        }
+        .sort-container {
+            flex: 0 1 auto; /* Изменено для лучшего контроля ширины */
+            margin-left: 10px; /* Добавляем отступ слева */
+        }
+        .sort-select {
+            width: 100%;
+            min-width: 120px; /* Устанавливаем минимальную ширину */
+        }
+    }
+    .catalog-container {
+        display: block;  // Изменено с flex на block
+    }
+    .product-list {
+        width: 100%;  // Добавлено для использования всей ширины
+    }
+    .catalog-header {
+        margin-bottom: 20px;
+    }
+    .catalog-title {
+        margin: 0 0 20px 0;
+    }
+    .sort-container {
+        margin-bottom: 20px;
+    }
+    .sort-container select {
+        width: 100%;
+        max-width: 300px;
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        background-color: white;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 1em;
+    }
+    @media (max-width: 767px) {
+        .sort-container select {
+            max-width: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Удалите весь JavaScript код, так как он больше не нужен -->
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="catalog-header">
+        <h1 class="catalog-title">Каталог</h1>
+        <div class="sort-container">
+            <svg class="sort-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 5h10"></path>
+                <path d="M11 9h7"></path>
+                <path d="M11 13h4"></path>
+                <path d="M3 17l3 3 3-3"></path>
+                <path d="M6 18V4"></path>
+            </svg>
+            <form method="get" action="{% url 'product_list' %}" style="flex-grow: 1;">
+                {% if query %}<input type="hidden" name="query" value="{{ query }}">{% endif %}
+                {% if category_id %}<input type="hidden" name="category" value="{{ category_id }}">{% endif %}
+                <select id="sort-select" name="sort_by" class="sort-select" onchange="this.form.submit()">
+                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>По названию</option>
+                    <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>По цене (возрастание)</option>
+                    <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>По цене (убывание)</option>
+                    <option value="popularity" {% if sort_by == 'popularity' %}selected{% endif %}>По популярности</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <h2>
+        {% if query %}
+            Результаты поиска для "{{ query }}"
+        {% elif current_category %}
+            {{ current_category.name }}
+        {% else %}
+            Все продукты
+        {% endif %}
+    </h2>
+
+    <div class="catalog-container">
+        <div class="product-list">
+            {% if products %}
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 g-md-3">
+                    {% for product in products %}
+                    <div class="col">
+                        <div class="card h-100 product-card">
+                            <a href="{% url 'product_detail' product.id %}" class="text-decoration-none text-dark">
+                                {% if product.main_image %}
+                                    <img src="{{ product.main_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                                {% else %}
+                                    <div class="text-center p-3">Изображение отсутствует</div>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ product.name }}</h5>
+                                    <div class="product-rating">
+                                        <span class="stars">
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= product.average_rating %}
+                                                    <span class="star filled">★</span>
+                                                {% else %}
+                                                    <span class="star">☆</span>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </span>
+                                        <span class="rating-value">{{ product.average_rating|floatformat:1 }}</span>
+                                    </div>
+                                    <p class="card-text">от {{ product.get_cheapest_variant.price|floatformat:2 }} ₽</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Пагинация -->
+                {% if products.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination">
+                        {% if products.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ products.previous_page_number }}{% if query %}&query={{ query }}{% endif %}{% if current_category %}&category={{ current_category.id }}{% endif %}&sort_by={{ sort_by }}">&laquo;</a></li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                        {% endif %}
+
+                        {% for i in products.paginator.page_range %}
+                            {% if products.number == i %}
+                                <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                            {% else %}
+                                <li class="page-item"><a class="page-link" href="?page={{ i }}{% if query %}&query={{ query }}{% endif %}{% if current_category %}&category={{ current_category.id }}{% endif %}&sort_by={{ sort_by }}">{{ i }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if products.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}{% if query %}&query={{ query }}{% endif %}{% if current_category %}&category={{ current_category.id }}{% endif %}&sort_by={{ sort_by }}">&raquo;</a></li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <p>К сожалению, товары не найдены.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
